@@ -197,7 +197,9 @@ int main(int argc, char *argv[])
     printf("Already have an username and password?\n (Yes - 1 No - 2): \n");
 	while(c!=2 && c!=1){
     scanf("%d", &c);
+	if(c!=2 && c!=1){
 	printf("1 or 2\n");
+	}
 	}
 	if(c==2){
         register_user();
