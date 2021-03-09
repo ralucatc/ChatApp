@@ -21,7 +21,7 @@
 #include <math.h>
 
 char username[20],password[20],buffer[30]=" ";
-unsigned char epassword[20],buffer2[30]=" ";
+
 pthread_mutex_t mutex;
 
 
@@ -82,12 +82,14 @@ void error(const char *msg)
 void encrypt(unsigned char *in, unsigned char *out, int len){
     unsigned char prev = 0;
     for(int i=0;i<len;i++){
-        out[i]=(((in[i]+10)+3))-prev;
+        out[i]=(in[i]+prev)-50;
         prev=out[i];
     }
+	out[strlen(in)]='\0';
 }
 
 void login_user(){
+	unsigned char epassword[20],buffer2[30]=" ";
     int ok=0;
     FILE *f;
     if((f=fopen("users.txt","r"))==NULL){
@@ -118,6 +120,7 @@ void login_user(){
 }
 
 void register_user(){
+	unsigned char epassword[20];
     FILE *users;
     
 	if((users=fopen("users.txt", "a"))==NULL){
