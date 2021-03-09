@@ -11,6 +11,8 @@
 #include <string.h>
 #include <pthread.h>
 #include <netdb.h>
+
+
 char username[20][5];
 int threadNumber,sockets[5];
 pthread_t thread[5];
@@ -74,66 +76,64 @@ void *client (void *fd){
 
 }
 
-
-
 void error(const char *msg)
 {
     perror(msg);
     exit(1);
 }
 
-int main(int argc, char *argv[])
-{
-     int sockfd, *newsockfd, portno;
-     socklen_t clilen;
-     char buffer[255];
-     struct sockaddr_in serv_addr, cli_addr;
-     int n;
-	 pthread_attr_t attr;
+int main(int argc, char *argv[]){
+     
+    int sockfd, *newsockfd, portno;
+    socklen_t clilen;
+    char buffer[255];
+    struct sockaddr_in serv_addr, cli_addr;
+    int n;
+    pthread_attr_t attr;
 
-	  pthread_attr_init(&attr);
-	  pthread_attr_setdetachstate(&attr, 1);
-	  pthread_mutex_init(&mutex, NULL);
-	  
-	 portno = atoi(argv[1]);
-     if (argc < 2) {
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, 1);
+    pthread_mutex_init(&mutex, NULL);
+    
+    portno = atoi(argv[1]);
+    if (argc < 2) {
          fprintf(stderr,"ERROR, no port provided\n");
          exit(1);
-     }
-     sockfd = socket(AF_INET, SOCK_STREAM, 0);
-     if (sockfd < 0) 
+    }
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);//deschidem un socket
+    
+    if (sockfd < 0) 
         error("ERROR opening socket");
      
-	 
-	 set_addr(&serv_addr,NULL,INADDR_ANY,portno);
-	 
-	 
-	 
-     if (bind(sockfd, (struct sockaddr *) &serv_addr,
-              sizeof(serv_addr)) < 0) 
-              error("ERROR on binding");
-     listen(sockfd,5);
-     clilen = sizeof(cli_addr);
-     while(1)
-     {
-		 
-	  newsockfd = (int *)malloc(sizeof(int));
-     *newsockfd = accept(sockfd,(struct sockaddr *) &cli_addr, &clilen);
-			if (newsockfd < 0) 
-          error("ERROR on accept");
+    
+    set_addr(&serv_addr,NULL,INADDR_ANY,portno);//completam structura serv_addr
+    
+    
+    
+    if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) 
+        error("ERROR on binding");
+     
+    listen(sockfd,5);
+    clilen = sizeof(cli_addr);
+    while(1){
+        
+    newsockfd = (int *)malloc(sizeof(int));
+    *newsockfd = accept(sockfd,(struct sockaddr *) &cli_addr, &clilen);
+    if (newsockfd < 0) 
+        error("ERROR on accept");
 	  
-          if(pthread_create(&thread[threadNumber], &attr, client, (void *)newsockfd) != 0){
-      printf("Eroare la crearea unui fir nou de executie!\n");
+    if(pthread_create(&thread[threadNumber], &attr, client, (void *)newsockfd) != 0){
+      error("Eroare la crearea unui fir nou de executie!\n");
       exit(1);
     }
-	adrese[threadNumber]=cli_addr;
-	sockets[threadNumber]=*newsockfd;
-	pthread_mutex_lock(&mutex);
-	threadNumber++;
-	printf("%d conexiuni!\n", threadNumber);
-	pthread_mutex_unlock(&mutex);
-	
-     }
+    adrese[threadNumber]=cli_addr;
+    sockets[threadNumber]=*newsockfd;
+    pthread_mutex_lock(&mutex);
+    threadNumber++;
+    printf("%d conexiuni!\n", threadNumber);
+    pthread_mutex_unlock(&mutex);
+
+    }
      close(*newsockfd);
      close(sockfd);
      return 0; 
